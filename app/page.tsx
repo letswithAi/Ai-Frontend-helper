@@ -1,103 +1,271 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, useEffect } from "react";
+import { Box, Grid, useMediaQuery, useTheme, Drawer } from "@mui/material";
+import Header from "../app/components/Header";
+import ChatPanel from "../app/components/ChatPanel";
+import Sidebar from "../app/components/Sidebar";
+import CodePreview from "../app/components/CodePreview";
+import { Message, ChatSession, SavedSnippet } from "@/lib/types";
+import { v4 as uuidv4 } from "uuid";
+
+function generateUuid(): string {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+export default function HomePage() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery((theme: any) => theme.breakpoints.down("md"));
+
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [codePreviewOpen, setCodePreviewOpen] = useState(!isMobile);
+  const [currentSession, setCurrentSession] = useState<ChatSession | null>(
+    null
+  );
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [savedSnippets, setSavedSnippets] = useState<SavedSnippet[]>([]);
+  const [selectedCode, setSelectedCode] = useState<string>("");
+  const [selectedLanguage, setSelectedLanguage] =
+    useState<string>("typescript");
+
+  // Load data from localStorage
+  useEffect(() => {
+    const savedSessions = localStorage.getItem("chat-sessions");
+    const savedSnippetsData = localStorage.getItem("saved-snippets");
+
+    if (savedSessions) {
+      try {
+        const parsedSessions = JSON.parse(savedSessions).map(
+          (session: any) => ({
+            ...session,
+            createdAt: new Date(session.createdAt),
+            messages: session.messages.map((msg: any) => ({
+              ...msg,
+              timestamp: new Date(msg.timestamp),
+            })),
+          })
+        );
+        setSessions(parsedSessions);
+        if (parsedSessions.length > 0) {
+          setCurrentSession(parsedSessions[0]);
+        }
+      } catch (e) {
+        console.error("Error loading sessions:", e);
+      }
+    }
+
+    if (savedSnippetsData) {
+      try {
+        const parsedSnippets = JSON.parse(savedSnippetsData).map(
+          (snippet: any) => ({
+            ...snippet,
+            savedAt: new Date(snippet.savedAt),
+          })
+        );
+        setSavedSnippets(parsedSnippets);
+      } catch (e) {
+        console.error("Error loading snippets:", e);
+      }
+    }
+  }, []);
+
+  // Save sessions to localStorage
+  useEffect(() => {
+    if (sessions.length > 0) {
+      localStorage.setItem("chat-sessions", JSON.stringify(sessions));
+    }
+  }, [sessions]);
+
+  // Save snippets to localStorage
+  useEffect(() => {
+    if (savedSnippets.length > 0) {
+      localStorage.setItem("saved-snippets", JSON.stringify(savedSnippets));
+    }
+  }, [savedSnippets]);
+
+  const createNewSession = () => {
+    const newSession: ChatSession = {
+      id: generateUuid(),
+      title: "New Chat",
+      messages: [],
+      createdAt: new Date(),
+    };
+    setSessions((prev) => [newSession, ...prev]);
+    setCurrentSession(newSession);
+  };
+
+  const selectSession = (session: ChatSession) => {
+    setCurrentSession(session);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const addMessage = (message: Omit<Message, "id" | "timestamp">) => {
+    const newMessage: Message = {
+      ...message,
+      id: generateUuid(),
+      timestamp: new Date(),
+    };
+
+    if (!currentSession) {
+      createNewSession();
+      return;
+    }
+
+    const updatedSession = {
+      ...currentSession,
+      messages: [...currentSession.messages, newMessage],
+      title:
+        currentSession.messages.length === 0
+          ? message.content.length > 30
+            ? message.content.substring(0, 30) + "..."
+            : message.content
+          : currentSession.title,
+    };
+
+    setCurrentSession(updatedSession);
+    setSessions((prev) =>
+      prev.map((s) => (s.id === updatedSession.id ? updatedSession : s))
+    );
+  };
+
+  const saveSnippet = (snippet: Omit<SavedSnippet, "id" | "savedAt">) => {
+    const newSnippet: SavedSnippet = {
+      ...snippet,
+      id: generateUuid(),
+      savedAt: new Date(),
+    };
+    setSavedSnippets((prev) => [newSnippet, ...prev]);
+  };
+
+  const handleCodeSelect = (code: string, language: string = "typescript") => {
+    setSelectedCode(code);
+    setSelectedLanguage(language);
+    if (isMobile) {
+      setCodePreviewOpen(true);
+    }
+  };
+
+  // Initialize with a session if none exists
+  useEffect(() => {
+    if (sessions.length === 0 && !currentSession) {
+      createNewSession();
+    }
+  }, []);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+      <Header
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        onToggleCodePreview={() => setCodePreviewOpen(!codePreviewOpen)}
+        onNewChat={createNewSession}
+      />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      <Box sx={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        {/* Mobile Sidebar Drawer */}
+        {isMobile ? (
+          <Drawer
+            anchor="left"
+            open={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            ModalProps={{
+              keepMounted: true,
+            }}
+            sx={{
+              "& .MuiDrawer-paper": {
+                width: 280,
+                boxSizing: "border-box",
+              },
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <Sidebar
+              sessions={sessions}
+              currentSession={currentSession}
+              savedSnippets={savedSnippets}
+              onSelectSession={selectSession}
+              onNewSession={createNewSession}
+              onCodeSelect={handleCodeSelect}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </Drawer>
+        ) : (
+          // Desktop Sidebar
+          sidebarOpen && (
+            <Box sx={{ width: 280, flexShrink: 0 }}>
+              <Sidebar
+                sessions={sessions}
+                currentSession={currentSession}
+                savedSnippets={savedSnippets}
+                onSelectSession={selectSession}
+                onNewSession={createNewSession}
+                onCodeSelect={handleCodeSelect}
+              />
+            </Box>
+          )
+        )}
+
+        {/* Main Chat Area */}
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            minWidth: 0,
+          }}
+        >
+          <ChatPanel
+            currentSession={currentSession}
+            onAddMessage={addMessage}
+            onSaveSnippet={saveSnippet}
+            onCodeSelect={handleCodeSelect}
+          />
+        </Box>
+
+        {/* Code Preview Panel */}
+        {isMobile ? (
+          <Drawer
+            anchor="right"
+            open={codePreviewOpen}
+            onClose={() => setCodePreviewOpen(false)}
+            ModalProps={{
+              keepMounted: true,
+            }}
+            sx={{
+              "& .MuiDrawer-paper": {
+                width: "90%",
+                boxSizing: "border-box",
+              },
+            }}
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            <CodePreview
+              code={selectedCode}
+              language={selectedLanguage}
+              onSaveSnippet={saveSnippet}
+            />
+          </Drawer>
+        ) : (
+          codePreviewOpen && (
+            <Box
+              sx={{
+                width: 400,
+                flexShrink: 0,
+                borderLeft: 1,
+                borderColor: "divider",
+              }}
+            >
+              <CodePreview
+                code={selectedCode}
+                language={selectedLanguage}
+                onSaveSnippet={saveSnippet}
+              />
+            </Box>
+          )
+        )}
+      </Box>
+    </Box>
   );
 }
