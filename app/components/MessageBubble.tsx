@@ -122,7 +122,7 @@
 //               style={{
 //                 maxWidth: "100%",
 //                 maxHeight: 200,
-//                 borderRadius: 8,
+//                 borderRadius: 1,
 //                 objectFit: "contain",
 //               }}
 //             />
@@ -388,8 +388,35 @@ import {
 } from "@mui/icons-material";
 import { Message, SavedSnippet, ComponentInfo } from "@/lib/types";
 
+interface CodeSnippet {
+  name: string;
+  code: string;
+  framework: string;
+}
+
+interface Guidance {
+  pageType: string;
+  complexity: {
+    level: string;
+    estimatedHours: number;
+    factors: string[];
+  };
+  folderStructure: string[];
+  components: ComponentInfo[];
+  snippets: CodeSnippet[];
+  styling: {
+    tailwindAlternatives: string[];
+    responsive: {
+      xs: string;
+      md: string;
+      lg: string;
+    };
+  };
+  accessibility: string[];
+}
+
 interface MessageBubbleProps {
-  message: Message;
+  message: Message & { guidance?: Guidance };
   onSaveSnippet: (snippet: Omit<SavedSnippet, "id" | "savedAt">) => void;
   onCodeSelect: (code: string, language: string) => void;
 }
@@ -585,88 +612,92 @@ export default function MessageBubble({
                 <Typography variant="subtitle2" gutterBottom>
                   💾 Code Snippets
                 </Typography>
-                {message.guidance.snippets.map((snippet, index) => (
-                  <Paper
-                    key={index}
-                    sx={{
-                      p: 2,
-                      mb: 2,
-                      bgcolor: "grey.900",
-                      color: "white",
-                      position: "relative",
-                      "&:hover .code-actions": {
-                        opacity: 1,
-                      },
-                    }}
-                  >
-                    <Box
-                      className="code-actions"
+                {message.guidance.snippets.map(
+                  (snippet: CodeSnippet, index: number) => (
+                    <Paper
+                      key={index}
                       sx={{
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
-                        display: "flex",
-                        gap: 0.5,
-                        opacity: 0,
-                        transition: "opacity 0.2s",
+                        p: 2,
+                        mb: 2,
+                        bgcolor: "grey.900",
+                        color: "white",
+                        position: "relative",
+                        "&:hover .code-actions": {
+                          opacity: 1,
+                        },
                       }}
                     >
-                      <IconButton
-                        size="small"
-                        onClick={() => handleCopyCode(snippet.code)}
-                        sx={{ color: "white" }}
-                        title="Copy code"
+                      <Box
+                        className="code-actions"
+                        sx={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          display: "flex",
+                          gap: 0.5,
+                          opacity: 0,
+                          transition: "opacity 0.2s",
+                        }}
                       >
-                        <CopyIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          handleSaveSnippet(
-                            snippet.code,
-                            snippet.name,
-                            snippet.framework
-                          )
-                        }
-                        sx={{ color: "white" }}
-                        title="Save snippet"
-                      >
-                        <SaveIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => onCodeSelect(snippet.code, "typescript")}
-                        sx={{ color: "white" }}
-                        title="Open in editor"
-                      >
-                        <CodeIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleCopyCode(snippet.code)}
+                          sx={{ color: "white" }}
+                          title="Copy code"
+                        >
+                          <CopyIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            handleSaveSnippet(
+                              snippet.code,
+                              snippet.name,
+                              snippet.framework
+                            )
+                          }
+                          sx={{ color: "white" }}
+                          title="Save snippet"
+                        >
+                          <SaveIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            onCodeSelect(snippet.code, "typescript")
+                          }
+                          sx={{ color: "white" }}
+                          title="Open in editor"
+                        >
+                          <CodeIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
 
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "grey.300", mb: 1, display: "block" }}
-                    >
-                      {snippet.name} - {snippet.framework}
-                    </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "grey.300", mb: 1, display: "block" }}
+                      >
+                        {snippet.name} - {snippet.framework}
+                      </Typography>
 
-                    <Typography
-                      component="pre"
-                      variant="body2"
-                      sx={{
-                        fontFamily: "Monaco, Consolas, monospace",
-                        fontSize: "0.75rem",
-                        lineHeight: 1.4,
-                        margin: 0,
-                        overflow: "auto",
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-all",
-                      }}
-                    >
-                      {snippet.code}
-                    </Typography>
-                  </Paper>
-                ))}
+                      <Typography
+                        component="pre"
+                        variant="body2"
+                        sx={{
+                          fontFamily: "Monaco, Consolas, monospace",
+                          fontSize: "0.75rem",
+                          lineHeight: 1.4,
+                          margin: 0,
+                          overflow: "auto",
+                          whiteSpace: "pre-wrap",
+                          wordBreak: "break-all",
+                        }}
+                      >
+                        {snippet.code}
+                      </Typography>
+                    </Paper>
+                  )
+                )}
               </Box>
             )}
 
@@ -677,7 +708,7 @@ export default function MessageBubble({
               </Typography>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 1 }}>
                 {message.guidance.styling.tailwindAlternatives.map(
-                  (className, index) => (
+                  (className: string, index: number) => (
                     <Chip
                       key={index}
                       label={className}
@@ -700,16 +731,18 @@ export default function MessageBubble({
                 ♿ Accessibility
               </Typography>
               <Box component="ul" sx={{ pl: 2, m: 0 }}>
-                {message.guidance.accessibility.map((item, index) => (
-                  <Typography
-                    key={index}
-                    component="li"
-                    variant="caption"
-                    color="text.secondary"
-                  >
-                    {item}
-                  </Typography>
-                ))}
+                {message.guidance.accessibility.map(
+                  (item: string, index: number) => (
+                    <Typography
+                      key={index}
+                      component="li"
+                      variant="caption"
+                      color="text.secondary"
+                    >
+                      {item}
+                    </Typography>
+                  )
+                )}
               </Box>
             </Box>
           </Box>

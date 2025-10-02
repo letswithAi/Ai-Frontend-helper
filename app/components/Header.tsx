@@ -1,209 +1,3 @@
-// // "use client";
-
-// // import React from "react";
-// // import {
-// //   AppBar,
-// //   Toolbar,
-// //   Typography,
-// //   IconButton,
-// //   Box,
-// //   useMediaQuery,
-// //   useTheme,
-// // } from "@mui/material";
-// // import {
-// //   Menu as MenuIcon,
-// //   Add as AddIcon,
-// //   Code as CodeIcon,
-// //   Settings as SettingsIcon,
-// // } from "@mui/icons-material";
-
-// // interface HeaderProps {
-// //   onToggleSidebar: () => void;
-// //   onToggleCodePreview: () => void;
-// //   onNewChat: () => void;
-// // }
-
-// // export default function Header({
-// //   onToggleSidebar,
-// //   onToggleCodePreview,
-// //   onNewChat,
-// // }: HeaderProps) {
-// //   const theme = useTheme();
-// //   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
-// //   return (
-// //     <AppBar
-// //       position="static"
-// //       elevation={0}
-// //       sx={{
-// //         backgroundColor: "background.paper",
-// //         borderBottom: 1,
-// //         borderColor: "divider",
-// //         color: "text.primary",
-// //       }}
-// //     >
-// //       <Toolbar sx={{ minHeight: "64px !important" }}>
-// //         <IconButton
-// //           edge="start"
-// //           onClick={onToggleSidebar}
-// //           sx={{ mr: 2 }}
-// //           aria-label="toggle sidebar"
-// //         >
-// //           <MenuIcon />
-// //         </IconButton>
-
-// //         <Typography
-// //           variant="h6"
-// //           component="h1"
-// //           sx={{
-// //             flexGrow: 1,
-// //             fontWeight: 600,
-// //             background: "linear-gradient(45deg, #2563eb, #7c3aed)",
-// //             backgroundClip: "text",
-// //             WebkitBackgroundClip: "text",
-// //             WebkitTextFillColor: "transparent",
-// //           }}
-// //         >
-// //           AI Frontend Helper
-// //         </Typography>
-
-// //         <Box sx={{ display: "flex", gap: 1 }}>
-// //           <IconButton
-// //             onClick={onNewChat}
-// //             size="small"
-// //             sx={{
-// //               backgroundColor: "primary.main",
-// //               color: "white",
-// //               "&:hover": {
-// //                 backgroundColor: "primary.dark",
-// //               },
-// //             }}
-// //             aria-label="new chat"
-// //           >
-// //             <AddIcon fontSize="small" />
-// //           </IconButton>
-
-// //           {!isMobile && (
-// //             <IconButton
-// //               onClick={onToggleCodePreview}
-// //               size="small"
-// //               aria-label="toggle code preview"
-// //             >
-// //               <CodeIcon fontSize="small" />
-// //             </IconButton>
-// //           )}
-
-// //           <IconButton size="small" aria-label="settings">
-// //             <SettingsIcon fontSize="small" />
-// //           </IconButton>
-// //         </Box>
-// //       </Toolbar>
-// //     </AppBar>
-// //   );
-// // }
-
-// "use client";
-
-// import React from "react";
-// import {
-// AppBar,
-// Toolbar,
-// Typography,
-// IconButton,
-// Box,
-// useMediaQuery,
-// } from "@mui/material";
-// import {
-// Menu as MenuIcon,
-// Add as AddIcon,
-// Code as CodeIcon,
-// Settings as SettingsIcon,
-// } from "@mui/icons-material";
-
-// interface HeaderProps {
-// onToggleSidebar: () => void;
-// onToggleCodePreview: () => void;
-// onNewChat: () => void;
-// }
-
-// export default function Header({
-// onToggleSidebar,
-// onToggleCodePreview,
-// onNewChat,
-// }: HeaderProps) {
-// const isMobile = useMediaQuery("(max-width:900px)");
-
-// return (
-//     <AppBar
-//     position="static"
-//     elevation={0}
-//     sx={{
-//         backgroundColor: "background.paper",
-//         borderBottom: 1,
-//         borderColor: "divider",
-//         color: "text.primary",
-//     }}
-//     >
-//     <Toolbar sx={{ minHeight: "64px !important" }}>
-//         <IconButton
-//         edge="start"
-//         onClick={onToggleSidebar}
-//         sx={{ mr: 2 }}
-//         aria-label="toggle sidebar"
-//         >
-//         <MenuIcon />
-//         </IconButton>
-
-//         <Typography
-//         variant="h6"
-//         component="h1"
-//         sx={{
-//             flexGrow: 1,
-//             fontWeight: 600,
-//             background: "linear-gradient(45deg, #2563eb, #7c3aed)",
-//             backgroundClip: "text",
-//             WebkitBackgroundClip: "text",
-//             WebkitTextFillColor: "transparent",
-//         }}
-//         >
-//         AI Frontend Helper
-//         </Typography>
-
-//         <Box sx={{ display: "flex", gap: 1 }}>
-//         <IconButton
-//             onClick={onNewChat}
-//             size="small"
-//             sx={{
-//             backgroundColor: "primary.main",
-//             color: "white",
-//             "&:hover": {
-//                 backgroundColor: "primary.dark",
-//             },
-//             }}
-//             aria-label="new chat"
-//         >
-//             <AddIcon fontSize="small" />
-//         </IconButton>
-
-//         {!isMobile && (
-//             <IconButton
-//             onClick={onToggleCodePreview}
-//             size="small"
-//             aria-label="toggle code preview"
-//             >
-//             <CodeIcon fontSize="small" />
-//             </IconButton>
-//         )}
-
-//         <IconButton size="small" aria-label="settings">
-//             <SettingsIcon fontSize="small" />
-//         </IconButton>
-//         </Box>
-//     </Toolbar>
-//     </AppBar>
-// );
-// }
-
 "use client";
 
 import React from "react";
@@ -215,26 +9,33 @@ import {
   Box,
   useMediaQuery,
 } from "@mui/material";
-import {
-  Menu as MenuIcon,
-  Add as AddIcon,
-  Code as CodeIcon,
-  Settings as SettingsIcon,
-} from "@mui/icons-material";
+import { Add as AddIcon, Close as CloseIcon } from "@mui/icons-material";
 
 interface HeaderProps {
   onToggleSidebar: () => void;
   onToggleCodePreview: () => void;
   onNewChat: () => void;
+  sidebarOpen: boolean; // Add this prop
 }
 
 export default function Header({
   onToggleSidebar,
   onToggleCodePreview,
   onNewChat,
+  sidebarOpen, // Receive the prop
 }: HeaderProps) {
-  // Fixed: Use media query without theme object to avoid serialization issues
   const isMobile = useMediaQuery("(max-width:900px)");
+
+  const handleToggleClick = () => {
+    if (sidebarOpen) {
+      // Close sidebar
+      onToggleSidebar();
+    } else {
+      // Open sidebar and create new chat
+      onToggleSidebar();
+      onNewChat();
+    }
+  };
 
   return (
     <AppBar
@@ -247,14 +48,33 @@ export default function Header({
         color: "text.primary",
       }}
     >
-      <Toolbar sx={{ minHeight: "64px !important" }}>
+      <Toolbar
+        sx={{
+          minHeight: { xs: "56px", sm: "64px" },
+          px: { xs: 1, sm: 2 },
+        }}
+      >
         <IconButton
-          edge="start"
-          onClick={onToggleSidebar}
-          sx={{ mr: 2 }}
-          aria-label="toggle sidebar"
+          // edge="start"
+          onClick={handleToggleClick}
+          size={isMobile ? "medium" : "small"}
+          sx={{
+            mr: { xs: 2, sm: 1 },
+            backgroundColor: "primary.main",
+            color: "white",
+            "&:hover": {
+              backgroundColor: "primary.dark",
+            },
+            width: { xs: 30, sm: 26 },
+            height: { xs: 30, sm: 26 },
+          }}
+          aria-label={sidebarOpen ? "close sidebar" : "new chat"}
         >
-          <MenuIcon />
+          {sidebarOpen ? (
+            <CloseIcon fontSize={isMobile ? "medium" : "small"} />
+          ) : (
+            <AddIcon fontSize={isMobile ? "medium" : "small"} />
+          )}
         </IconButton>
 
         <Typography
@@ -263,6 +83,7 @@ export default function Header({
           sx={{
             flexGrow: 1,
             fontWeight: 600,
+            fontSize: { xs: "1rem", sm: "1.25rem" },
             background: "linear-gradient(45deg, #2563eb, #7c3aed)",
             backgroundClip: "text",
             WebkitBackgroundClip: "text",
@@ -272,36 +93,7 @@ export default function Header({
           AI Frontend Helper
         </Typography>
 
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <IconButton
-            onClick={onNewChat}
-            size="small"
-            sx={{
-              backgroundColor: "primary.main",
-              color: "white",
-              "&:hover": {
-                backgroundColor: "primary.dark",
-              },
-            }}
-            aria-label="new chat"
-          >
-            <AddIcon fontSize="small" />
-          </IconButton>
-
-          {!isMobile && (
-            <IconButton
-              onClick={onToggleCodePreview}
-              size="small"
-              aria-label="toggle code preview"
-            >
-              <CodeIcon fontSize="small" />
-            </IconButton>
-          )}
-
-          <IconButton size="small" aria-label="settings">
-            <SettingsIcon fontSize="small" />
-          </IconButton>
-        </Box>
+        <Box sx={{ display: "flex", gap: 1 }} />
       </Toolbar>
     </AppBar>
   );

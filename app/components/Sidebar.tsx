@@ -7,17 +7,25 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
-  Divider,
   Typography,
   Tabs,
   Tab,
   IconButton,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   Chat as ChatIcon,
   Code as CodeIcon,
   Delete as DeleteIcon,
+  MoreVert as MoreVertIcon,
 } from "@mui/icons-material";
 import { ChatSession, SavedSnippet } from "@/lib/types";
 
@@ -28,6 +36,8 @@ interface SidebarProps {
   onSelectSession: (session: ChatSession) => void;
   onNewSession: () => void;
   onCodeSelect: (code: string, language: string) => void;
+  onDeleteSnippet: (snippetId: string) => void;
+  onDeleteSession: (sessionId: string) => void;
 }
 
 export default function Sidebar({
@@ -35,13 +45,56 @@ export default function Sidebar({
   currentSession,
   savedSnippets,
   onSelectSession,
-  onNewSession,
   onCodeSelect,
+  onDeleteSnippet,
+  onDeleteSession,
 }: SidebarProps) {
   const [activeTab, setActiveTab] = useState(0);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [successMessage, setSuccessMessage] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null
+  );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
+  };
+
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLElement>,
+    sessionId: string
+  ) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedSessionId(sessionId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDeleteClick = () => {
+    handleMenuClose();
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedSessionId) {
+      onDeleteSession(selectedSessionId);
+      setDeleteDialogOpen(false);
+      setSelectedSessionId(null);
+      setSuccessMessage(true);
+    }
+  };
+  const handleCloseSuccess = () => {
+    setSuccessMessage(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setSelectedSessionId(null);
   };
 
   const formatDate = (date: Date) => {
@@ -119,6 +172,14 @@ export default function Sidebar({
                         fontSize: "0.75rem",
                       }}
                     />
+                    <IconButton
+                      size="small"
+                      sx={{ ml: 1, p: 0.25 }}
+                      aria-label="more options"
+                      onClick={(e) => handleMenuOpen(e, session.id)}
+                    >
+                      <MoreVertIcon fontSize="small" />
+                    </IconButton>
                   </ListItemButton>
                 </ListItem>
               ))}
@@ -187,6 +248,10 @@ export default function Sidebar({
                         size="small"
                         sx={{ ml: 1, p: 0.25 }}
                         aria-label="delete snippet"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteSnippet(snippet.id);
+                        }}
                       >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
@@ -208,6 +273,49 @@ export default function Sidebar({
           </Box>
         )}
       </Box>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Delete Chat Session?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete this chat session? This action
+            cannot be undone and all messages will be permanently deleted.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            autoFocus
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={successMessage}
+        autoHideDuration={3000}
+        onClose={handleCloseSuccess}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseSuccess}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          Chat session deleted successfully!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
